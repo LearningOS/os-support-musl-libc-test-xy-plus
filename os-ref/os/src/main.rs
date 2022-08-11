@@ -60,15 +60,15 @@ lazy_static! {
 pub fn rust_main() -> ! {
     clear_bss();
     mm::init();
-    println!("KERN: init gpu");
-    #[cfg(feature = "board_qemu")]
-    GPU_DEVICE.clone();
-    println!("KERN: init keyboard");
-    #[cfg(feature = "board_qemu")]
-    KEYBOARD_DEVICE.clone();
-    println!("KERN: init mouse");
-    #[cfg(feature = "board_qemu")]
-    MOUSE_DEVICE.clone();
+    // println!("KERN: init gpu");
+    // #[cfg(feature = "board_qemu")]
+    // GPU_DEVICE.clone();
+    // println!("KERN: init keyboard");
+    // #[cfg(feature = "board_qemu")]
+    // KEYBOARD_DEVICE.clone();
+    // println!("KERN: init mouse");
+    // #[cfg(feature = "board_qemu")]
+    // MOUSE_DEVICE.clone();
     println!("KERN: init trap");
     trap::init();
     trap::enable_timer_interrupt();
