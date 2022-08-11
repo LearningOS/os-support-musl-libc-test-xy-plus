@@ -9,9 +9,9 @@ use embedded_graphics::{
 };
 use tinybmp::Bmp;
 
-use crate::{drivers::GPU_DEVICE, sync::UPIntrFreeCell};
-use crate::board::{VIRTGPU_XRES, VIRTGPU_YRES};
 use super::{Component, Graphics, ImageComp};
+use crate::board::{VIRTGPU_XRES, VIRTGPU_YRES};
+use crate::{drivers::GPU_DEVICE, sync::UPIntrFreeCell};
 
 static FILEICON: &[u8] = include_bytes!("../assert/file.bmp");
 

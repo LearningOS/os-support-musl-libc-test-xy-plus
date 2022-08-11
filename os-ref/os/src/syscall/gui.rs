@@ -24,9 +24,16 @@ lazy_static::lazy_static!(
 );
 
 pub fn create_desktop() -> isize {
-    let mut p: Arc<dyn Component + 'static> =
-        Arc::new(Panel::new(Size::new(VIRTGPU_XRES, VIRTGPU_YRES), Point::new(0, 0)));
-    let image = ImageComp::new(Size::new(VIRTGPU_XRES, VIRTGPU_YRES), Point::new(0, 0), DT, Some(p.clone()));
+    let mut p: Arc<dyn Component + 'static> = Arc::new(Panel::new(
+        Size::new(VIRTGPU_XRES, VIRTGPU_YRES),
+        Point::new(0, 0),
+    ));
+    let image = ImageComp::new(
+        Size::new(VIRTGPU_XRES, VIRTGPU_YRES),
+        Point::new(0, 0),
+        DT,
+        Some(p.clone()),
+    );
     let icon = IconController::new(ROOT_INODE.ls(), Some(p.clone()));
     p.add(Arc::new(image));
     p.add(Arc::new(icon));
