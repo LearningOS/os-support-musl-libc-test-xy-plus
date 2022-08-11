@@ -10,6 +10,7 @@ os/src/linker.ld
 os/last-*
 os/.gdb_history
 os/os.bin
+os/fs.img
 tools/
 pushall.sh
 .vscode/*.log
