@@ -1,5 +1,5 @@
-MUSL_LIB?=/opt/riscv64--musl--bleeding-edge-2020.08-1/riscv64-buildroot-linux-musl/sysroot/lib64/
-PREFIX?=riscv64-buildroot-linux-musl-
+MUSL_LIB?=/usr/local/riscv64-linux-musl-cross/riscv64-linux-musl/lib
+PREFIX?=riscv64-linux-musl-
 CC=$(PREFIX)gcc
 OBJCOPY=$(PREFIX)objcopy
 # CC=musl-gcc
@@ -33,12 +33,14 @@ LDLIBS += -Os -s -lpthread -lm -lrt
 
 all: static dynamic runtest
 
+.PHONY: entry.h
+
 so: $(DSO_SOS)
 
 entry.c: entry.h
 
 entry.h: dynamic.txt static.txt
-	printf "#ifdef STATIC\n" >> entry.h
+	printf "#ifdef STATIC\n" > entry.h
 	cat static.txt | xargs -I AA basename AA .exe | sed 's/-/_/g' | xargs -I BB printf "int %s_main(int, char **);\n" BB >> entry.h
 	printf "struct {const char *name; int (*func)(int, char**);} table [] = {\n" >> entry.h
 	cat static.txt | xargs -I AA basename AA .exe | sed 's/-/_/g' | xargs -I BB printf "\t{\"%s\", %s_main},\n" BB BB >> entry.h
@@ -53,6 +55,8 @@ entry.h: dynamic.txt static.txt
 	printf "\t{0, 0}\n" >> entry.h
 	printf "};\n" >> entry.h
 	printf "#endif\n\n" >> entry.h
+
+	python3.8 fix.py
 
 runtest: src/common/runtest.obj $(COMMON_OBJS)
 	$(CC) $(LDFLAGS) $^ -static -o runtest.exe
