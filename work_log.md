@@ -25,12 +25,24 @@ magic 不对，原因是需要加载通过 user 里生成的 fs.img ，不能直
 
 修改 MUSL_LIB 为 `/usr/local/riscv64-linux-musl-cross/riscv64-linux-musl/lib`
 
+- 偶现无法正常运行 os
+
+暂时通过把 smp 改为 1 解决。
+
+- 编译时间太长
+
+删掉无用的用户程序，保留 initproc 和 usershell ，可以省去编译用户程序的时间。
+
 - 无法编译 libc test
 
 脚本有问题，已修复且提交 pr：https://github.com/oscomp/testsuits-for-oskernel/pull/12
 
-- 运行测例报错 [kernel] Segmentation Fault, SIGSEGV=11
+- 运行测例报错 `[kernel] Segmentation Fault, SIGSEGV=11`
 
-暂未解决，可能原因是在 user shell 运行用户程序的时候，没有正确传入参数。
+暂未解决，可能原因是在 user shell 运行用户程序的时候，没有正确传入参数。（应该不是，因为有别的用户程序能正确传入参数）
 
-做过的检查：只在 entry.c 里进行 mystrcmp 操作也会报错退出。
+只在 entry.c 里进行 mystrcmp 操作也会报错退出。
+
+使用仅 return 0 的 enrty.c 放入，运行报错 `[kernel] Segmentation Fault, SIGSEGV=11`
+
+可能是没有设置好 \_start 和 entry 等，在查。

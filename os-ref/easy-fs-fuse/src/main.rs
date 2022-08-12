@@ -84,7 +84,7 @@ fn easy_fs_pack() -> std::io::Result<()> {
         // write data to easy-fs
         inode.write_at(0, all_data.as_slice());
     }
-    let mut host_file = File::open("../../testsuits-for-os/libc-test/entry-dynamic.exe").unwrap();
+    let mut host_file = File::open("../../testsuits-for-os/libc-test/entry-static.exe").unwrap();
     let mut all_data: Vec<u8> = Vec::new();
     host_file.read_to_end(&mut all_data).unwrap();
     let inode = root_inode.create("entry_static").unwrap();
