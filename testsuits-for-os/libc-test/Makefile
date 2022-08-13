@@ -27,6 +27,8 @@ CFLAGS += -Werror=implicit-function-declaration -Werror=implicit-int -Werror=poi
 CFLAGS += -Os -s
 CFLAGS += -Isrc/common/
 LDLIBS += -Os -s -lpthread -lm -lrt
+LDFLAGS += -T ../../os-ref/user/src/linker.ld
+LDFLAGS += -nostartfiles
 
 # CFLAGS += -D_FILE_OFFSET_BITS=64
 # LDLIBS += -lcrypt -ldl -lresolv -lutil -lpthread
@@ -58,15 +60,24 @@ entry.h: dynamic.txt static.txt
 
 	python3.8 fix.py
 
-runtest: src/common/runtest.obj $(COMMON_OBJS)
+runtest: src/common/runtest.obj $(COMMON_OBJS) initcode.S umain.c
 	$(CC) $(LDFLAGS) $^ -static -o runtest.exe
 
-static: $(COMMON_OBJS) $(STATIC_PREFIXED_OBJS) entry.c src/functional/tls_align_dso.obj
+static: $(COMMON_OBJS) $(STATIC_PREFIXED_OBJS) entry.c src/functional/tls_align_dso.obj initcode.S umain.c
 	$(CC) $(LDFLAGS) -DSTATIC $^ -static -o entry-static.exe
 
-dynamic: $(DYNAMIC_PREFIXED_OBJS) $(DSO_SOS) $(COMMON_OBJS) entry.c
-	# $(CC) $(LDFLAGS) entry.c -DDYNAMIC $(COMMON_OBJS) $(DYNAMIC_PREFIXED_OBJS) -Lsrc/functional -Lsrc/regression -ltls_align_dso -ltls_init_dso -ldlopen_dso -ltls_get_new-dtv_dso -o entry-dynamic.exe
-	$(CC) $(LDFLAGS) entry.c -DDYNAMIC $(COMMON_OBJS) $(DYNAMIC_PREFIXED_OBJS) -Lsrc/functional -Lsrc/regression  -o entry-dynamic.exe -rdynamic
+dynamic: $(DYNAMIC_PREFIXED_OBJS) $(DSO_SOS) $(COMMON_OBJS) entry.c initcode.S umain.c
+	$(CC) $(LDFLAGS) entry.c initcode.S umain.c -DDYNAMIC $(COMMON_OBJS) $(DYNAMIC_PREFIXED_OBJS) -Lsrc/functional -Lsrc/regression  -o entry-dynamic.exe -rdynamic
+
+# runtest: src/common/runtest.obj $(COMMON_OBJS)
+# 	$(CC) $(LDFLAGS) $^ -static -o runtest.exe
+
+# static: $(COMMON_OBJS) $(STATIC_PREFIXED_OBJS) entry.c src/functional/tls_align_dso.obj
+# 	$(CC) $(LDFLAGS) -DSTATIC $^ -static -o entry-static.exe
+
+# dynamic: $(DYNAMIC_PREFIXED_OBJS) $(DSO_SOS) $(COMMON_OBJS) entry.c
+# 	# $(CC) $(LDFLAGS) entry.c -DDYNAMIC $(COMMON_OBJS) $(DYNAMIC_PREFIXED_OBJS) -Lsrc/functional -Lsrc/regression -ltls_align_dso -ltls_init_dso -ldlopen_dso -ltls_get_new-dtv_dso -o entry-dynamic.exe
+# 	$(CC) $(LDFLAGS) entry.c -DDYNAMIC $(COMMON_OBJS) $(DYNAMIC_PREFIXED_OBJS) -Lsrc/functional -Lsrc/regression  -o entry-dynamic.exe -rdynamic
 
 common: $(COMMON_OBJS)
 

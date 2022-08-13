@@ -84,11 +84,15 @@ fn easy_fs_pack() -> std::io::Result<()> {
         // write data to easy-fs
         inode.write_at(0, all_data.as_slice());
     }
-    let mut host_file = File::open("../../testsuits-for-os/libc-test/entry-static.exe").unwrap();
-    let mut all_data: Vec<u8> = Vec::new();
-    host_file.read_to_end(&mut all_data).unwrap();
-    let inode = root_inode.create("entry_static").unwrap();
-    inode.write_at(0, all_data.as_slice());
+    let test_path = "../../testsuits-for-os/libc-test/";
+    let test_app = vec!["entry-static.exe", "entry-dynamic.exe", "runtest.exe"];
+    for app in test_app {
+        let mut host_file = File::open(format!("{}{}", test_path, app)).unwrap();
+        let mut all_data: Vec<u8> = Vec::new();
+        host_file.read_to_end(&mut all_data).unwrap();
+        let inode = root_inode.create(app).unwrap();
+        inode.write_at(0, all_data.as_slice());
+    }
     // list apps
     for app in root_inode.ls() {
         println!("{}", app);

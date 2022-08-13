@@ -1,6 +1,6 @@
 .*/*
 !.github/*
-!.vscode/settings.json
+.vscode
 
 **/target/
 **/Cargo.lock
@@ -14,3 +14,6 @@ os/fs.img
 tools/
 pushall.sh
 .vscode/*.log
+
+run-static.sh
+run-dynamic.sh
