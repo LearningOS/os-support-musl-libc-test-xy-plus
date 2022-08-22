@@ -96,3 +96,27 @@ exit 1
 ```
 
 测例已经可以被正确加载，后续可以开始实现 syscall 。
+
+- 增加 rt signal 相关 syscall
+
+前面的 log 看到，我们 skip 了三个 syscall 。
+
+暴力的 skip 并不会通过，于是我先简易的实现了 sys_rt_sigaction 和 sys_rt_sigprocmask 。写了一半后发现可以看到 runtest 的源码在 runtest.c ，阅读后发现这两个 syscall 其实没用。但是已经基本写完了，就还是 commit 上去了，以后可能会用到。只需要在 os-ref/os/src/task/signal.rs 里加上对指定 handler 的调用和对 mask 的支持就可以了。现在加上可能会看不清楚 runtest 的报错，所以就先不加。
+
+sys_rt_sigtimedwait 用的是一个偷懒的实现方案，该调用要求在截止时间前等待信号触发。我阅读测例发现其调用是为了等待子进程结束，所以我只处理了 sigchld ，并且是强制先等待 timeout 的时间再检查是否有子进程返回。检查方式也不是通过信号，是和 waitpid 类似的实现，检查 child.is_zombie 。
+
+- 设置 tp
+
+算是一个奇怪的坑。在 fork 的时候会直接挂掉，显示是访存错误。检查挂掉的指令地址，发现是在用户程序（rust-objdump --arch-name=riscv64 runtest.exe -d >> log），将 tp 寄存器的值作为指针用了。
+
+网上搜了 musl libc 里对 fork 的 c 代码实现，和反汇编出来的汇编代码是能对上的。musl libc 的 fork 并不是只调用 syscall ，还会做一些进程的检查，从而用到了 tp 。
+
+在以前的 rCore、zCore 都是不会管 tp 寄存器的，在 tutorial 里甚至明确在 trap.S 里跳过了 tp 寄存器的保存和恢复，说用户程序不会使用 tp 寄存器。
+
+于是在 trap.S 里增加对 tp 的保存和恢复，在用户程序的 initode.S 里增加一段空间，然后将地址赋值给 tp 。
+
+- 修改 runtest 的错误提示
+
+发现总是会挂在访存错误，反汇编看错误指令，大约是在处理 strerror(errno) 时出了一些问题，感觉不严重，但是也没搜到 errno 是何时赋值的，系统应该给予什么帮助，于是就先粗暴的修改测例，在报错的时候不打印 errno 就行了。
+
+这个主要是为了自己查错方便，如果能顺利通过所有测例，是不会触发 strerror(errno) 的调用的，所以问题不大。

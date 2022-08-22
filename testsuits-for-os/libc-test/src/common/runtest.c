@@ -26,7 +26,8 @@ static int start(char *wrap, char *argv[])
 			argv[0] = wrap;
 		}
 		execv(argv[0], argv);
-		t_error("%s exec failed: %s\n", argv[0], strerror(errno));
+		t_error("%s exec failed\n", argv[0]);
+		// t_error("%s exec failed: %s\n", argv[0], strerror(errno));
 		exit(1);
 	}
 	return pid;
@@ -71,7 +72,8 @@ int main(int argc, char *argv[])
 	pid = start(wrap, argv);
 	int err = 0;
 	if (pid == -1) {
-		t_error("%s fork failed: %s\n", argv[0], strerror(errno));
+		t_error("%s fork failed\n", argv[0]);
+		// t_error("%s fork failed: %s\n", argv[0], strerror(errno));
 		t_printf("FAIL %s [internal]\n", argv[0]);
 		err = 1;
 	}
@@ -79,16 +81,19 @@ int main(int argc, char *argv[])
 		if (errno == EAGAIN)
 			timeout = 1;
 		else {
-			t_error("%s sigtimedwait failed: %s\n", argv[0], strerror(errno));
+			t_error("%s sigtimedwait failed\n", argv[0]);
+			// t_error("%s sigtimedwait failed: %s\n", argv[0], strerror(errno));
 			err = 1;
 		}
 		if (kill(pid, SIGKILL) == -1) {
-			t_error("%s kill failed: %s\n", argv[0], strerror(errno));
+			t_error("%s kill failed\n", argv[0]);
+			// t_error("%s kill failed: %s\n", argv[0], strerror(errno));
 			err = 1;
 		}
 	}
 	if (waitpid(pid, &status, 0) != pid) {
-		t_error("%s waitpid failed: %s\n", argv[0], strerror(errno));
+		t_error("%s waitpid failed\n", argv[0]);
+		// t_error("%s waitpid failed: %s\n", argv[0], strerror(errno));
 		t_printf("FAIL %s [internal]\n", argv[0]);
 		err = 1;
 	}

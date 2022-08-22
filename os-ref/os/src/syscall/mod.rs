@@ -5,16 +5,21 @@ const SYSCALL_PIPE: usize = 59;
 const SYSCALL_READ: usize = 63;
 const SYSCALL_WRITE: usize = 64;
 const SYSCALL_EXIT: usize = 93;
+const SYSCALL_EXIT_GROUP: usize = 94;
 const SYSCALL_SLEEP: usize = 101;
 const SYSCALL_YIELD: usize = 124;
 const SYSCALL_KILL: usize = 129;
+const SYSCALL_RT_SIGACTION: usize = 134;
+const SYSCALL_RT_SIGPROCMASK: usize = 135;
+const SYSCALL_RT_SIGTIMEDWAIT: usize = 137;
 const SYSCALL_GET_TIME: usize = 169;
 const SYSCALL_GETPID: usize = 172;
+const SYSCALL_GETTID: usize = 178;
 const SYSCALL_FORK: usize = 220;
 const SYSCALL_EXEC: usize = 221;
 const SYSCALL_WAITPID: usize = 260;
+const SYSCALL_PRLIMIT64: usize = 261;
 const SYSCALL_THREAD_CREATE: usize = 1000;
-const SYSCALL_GETTID: usize = 1001;
 const SYSCALL_WAITTID: usize = 1002;
 const SYSCALL_MUTEX_CREATE: usize = 1010;
 const SYSCALL_MUTEX_LOCK: usize = 1011;
@@ -30,6 +35,7 @@ mod fs;
 #[cfg(feature = "board_qemu")]
 mod gui;
 mod process;
+mod signal;
 mod sync;
 mod thread;
 #[cfg(feature = "board_qemu")]
@@ -39,11 +45,23 @@ use fs::*;
 #[cfg(feature = "board_qemu")]
 pub use gui::PAD;
 use process::*;
+use signal::*;
 use sync::*;
 use thread::*;
 
 #[cfg(feature = "board_qemu")]
-pub fn syscall(syscall_id: usize, args: [usize; 3]) -> isize {
+pub fn syscall(syscall_id: usize, args: [usize; 4]) -> isize {
+    // if syscall_id != SYSCALL_YIELD && syscall_id != SYSCALL_WAITPID {
+    //     println!(
+    //         "{} in {} : {}, {}, {}, {}",
+    //         syscall_id,
+    //         sys_getpid(),
+    //         args[0],
+    //         args[1],
+    //         args[2],
+    //         args[3]
+    //     );
+    // }
     match syscall_id {
         SYSCALL_DUP => sys_dup(args[0]),
         SYSCALL_OPEN => sys_open(args[0] as *const u8, args[1] as u32),
@@ -52,9 +70,13 @@ pub fn syscall(syscall_id: usize, args: [usize; 3]) -> isize {
         SYSCALL_READ => sys_read(args[0], args[1] as *const u8, args[2]),
         SYSCALL_WRITE => sys_write(args[0], args[1] as *const u8, args[2]),
         SYSCALL_EXIT => sys_exit(args[0] as i32),
+        SYSCALL_EXIT_GROUP => sys_exit(args[0] as i32),
         SYSCALL_SLEEP => sys_sleep(args[0]),
         SYSCALL_YIELD => sys_yield(),
-        SYSCALL_KILL => sys_kill(args[0], args[1] as u32),
+        SYSCALL_KILL => sys_kill(args[0], args[1] as u64),
+        SYSCALL_RT_SIGACTION => sys_rt_sigaction(args[0], args[1], args[2], args[3]),
+        SYSCALL_RT_SIGPROCMASK => sys_rt_sigprocmask(args[0], args[1], args[2], args[3]),
+        SYSCALL_RT_SIGTIMEDWAIT => sys_rt_sigtimedwait(args[0], args[1], args[2]),
         SYSCALL_GET_TIME => sys_get_time(),
         SYSCALL_GETPID => sys_getpid(),
         SYSCALL_FORK => sys_fork(),
@@ -63,6 +85,10 @@ pub fn syscall(syscall_id: usize, args: [usize; 3]) -> isize {
         SYSCALL_THREAD_CREATE => sys_thread_create(args[0], args[1]),
         SYSCALL_GETTID => sys_gettid(),
         SYSCALL_WAITTID => sys_waittid(args[0]) as isize,
+        SYSCALL_PRLIMIT64 => {
+            println!("[kernel] warn: skip unimplemented sys prlimit64");
+            0
+        }
         SYSCALL_MUTEX_CREATE => sys_mutex_create(args[0] == 1),
         SYSCALL_MUTEX_LOCK => sys_mutex_lock(args[0]),
         SYSCALL_MUTEX_UNLOCK => sys_mutex_unlock(args[0]),

@@ -103,7 +103,7 @@ pub fn sys_waitpid(pid: isize, exit_code_ptr: *mut i32) -> isize {
     // ---- release current PCB automatically
 }
 
-pub fn sys_kill(pid: usize, signal: u32) -> isize {
+pub fn sys_kill(pid: usize, signal: u64) -> isize {
     if let Some(process) = pid2process(pid) {
         if let Some(flag) = SignalFlags::from_bits(signal) {
             process.inner_exclusive_access().signals |= flag;

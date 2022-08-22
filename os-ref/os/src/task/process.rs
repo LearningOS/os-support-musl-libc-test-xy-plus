@@ -3,9 +3,11 @@ use super::manager::insert_into_pid2process;
 use super::TaskControlBlock;
 use super::{add_task, SignalFlags};
 use super::{pid_alloc, PidHandle};
+use crate::config::RTMAX;
 use crate::fs::{File, Stdin, Stdout};
 use crate::mm::{translated_refmut, MemorySet, KERNEL_SPACE};
 use crate::sync::{Condvar, Mutex, Semaphore, UPIntrFreeCell, UPIntrRefMut};
+use crate::task::signal::SignalAction;
 use crate::trap::{trap_handler, TrapContext};
 use alloc::string::String;
 use alloc::sync::{Arc, Weak};
@@ -19,6 +21,19 @@ pub struct ProcessControlBlock {
     inner: UPIntrFreeCell<ProcessControlBlockInner>,
 }
 
+#[derive(Clone)]
+pub struct SignalActions {
+    table: [SignalAction; RTMAX + 1],
+}
+
+impl Default for SignalActions {
+    fn default() -> Self {
+        Self {
+            table: [SignalAction::default(); RTMAX + 1],
+        }
+    }
+}
+
 pub struct ProcessControlBlockInner {
     pub is_zombie: bool,
     pub memory_set: MemorySet,
@@ -27,11 +42,13 @@ pub struct ProcessControlBlockInner {
     pub exit_code: i32,
     pub fd_table: Vec<Option<Arc<dyn File + Send + Sync>>>,
     pub signals: SignalFlags,
+    pub signal_mask: SignalFlags,
     pub tasks: Vec<Option<Arc<TaskControlBlock>>>,
     pub task_res_allocator: RecycleAllocator,
     pub mutex_list: Vec<Option<Arc<dyn Mutex>>>,
     pub semaphore_list: Vec<Option<Arc<Semaphore>>>,
     pub condvar_list: Vec<Option<Arc<Condvar>>>,
+    pub signal_actions: SignalActions,
 }
 
 impl ProcessControlBlockInner {
@@ -64,6 +81,14 @@ impl ProcessControlBlockInner {
     pub fn get_task(&self, tid: usize) -> Arc<TaskControlBlock> {
         self.tasks[tid].as_ref().unwrap().clone()
     }
+
+    pub fn signal_action(&self, signal: usize) -> SignalAction {
+        self.signal_actions.table[signal]
+    }
+
+    pub fn set_signal_action(&mut self, signal: usize, action: SignalAction) {
+        self.signal_actions.table[signal] = action;
+    }
 }
 
 impl ProcessControlBlock {
@@ -94,11 +119,13 @@ impl ProcessControlBlock {
                         Some(Arc::new(Stdout)),
                     ],
                     signals: SignalFlags::empty(),
+                    signal_mask: SignalFlags::empty(),
                     tasks: Vec::new(),
                     task_res_allocator: RecycleAllocator::new(),
                     mutex_list: Vec::new(),
                     semaphore_list: Vec::new(),
                     condvar_list: Vec::new(),
+                    signal_actions: Default::default(),
                 })
             },
         });
@@ -213,11 +240,13 @@ impl ProcessControlBlock {
                     exit_code: 0,
                     fd_table: new_fd_table,
                     signals: SignalFlags::empty(),
+                    signal_mask: SignalFlags::empty(),
                     tasks: Vec::new(),
                     task_res_allocator: RecycleAllocator::new(),
                     mutex_list: Vec::new(),
                     semaphore_list: Vec::new(),
                     condvar_list: Vec::new(),
+                    signal_actions: parent.signal_actions.clone(),
                 })
             },
         });

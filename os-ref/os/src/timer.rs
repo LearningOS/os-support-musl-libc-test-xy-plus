@@ -9,6 +9,13 @@ use alloc::sync::Arc;
 use lazy_static::*;
 use riscv::register::time;
 
+#[repr(C)]
+#[derive(Debug)]
+pub struct TimeVal {
+    pub sec: usize,
+    pub usec: usize,
+}
+
 const TICKS_PER_SEC: usize = 100;
 const MSEC_PER_SEC: usize = 1000;
 

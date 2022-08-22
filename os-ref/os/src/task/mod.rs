@@ -23,7 +23,7 @@ pub use processor::{
     current_kstack_top, current_process, current_task, current_trap_cx, current_trap_cx_user_va,
     current_user_token, run_tasks, schedule, take_current_task,
 };
-pub use signal::SignalFlags;
+pub use signal::{SignalAction, SignalFlags};
 pub use task::{TaskControlBlock, TaskStatus};
 
 pub fn suspend_current_and_run_next() {
@@ -150,7 +150,7 @@ pub fn add_initproc() {
 pub fn check_signals_of_current() -> Option<(i32, &'static str)> {
     let process = current_process();
     let process_inner = process.inner_exclusive_access();
-    process_inner.signals.check_error()
+    process_inner.signals.check_error(process_inner.signal_mask)
 }
 
 pub fn current_add_signal(signal: SignalFlags) {
