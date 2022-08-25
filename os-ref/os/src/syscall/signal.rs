@@ -5,8 +5,8 @@ use crate::timer::{add_timer, get_time_ms, TimeVal};
 use numeric_enum_macro::numeric_enum;
 
 pub fn sys_rt_sigaction(signum: usize, act: usize, oldact: usize, sigsetsize: usize) -> isize {
-    println!("[kernel] warn: unimplement syscall rt_sigaction, will have no use");
-    
+    // println!("[kernel] warn: unimplement syscall rt_sigaction, will have no use");
+
     if let Some(signal) = SignalFlags::from_bits(1 << signum as u64) {
         if sigsetsize != core::mem::size_of::<SignalFlags>()
             || signal == SignalFlags::SIGKILL
@@ -25,7 +25,7 @@ pub fn sys_rt_sigaction(signum: usize, act: usize, oldact: usize, sigsetsize: us
 }
 
 pub fn sys_rt_sigprocmask(how: usize, set: usize, oldset: usize, sigsetsize: usize) -> isize {
-    println!("[kernel] warn: unimplement syscall rt_sigprocmask, will have no use");
+    // println!("[kernel] warn: unimplement syscall rt_sigprocmask, will have no use");
     numeric_enum! {
         #[repr(usize)]
         #[derive(Debug)]
@@ -58,7 +58,7 @@ pub fn sys_rt_sigprocmask(how: usize, set: usize, oldset: usize, sigsetsize: usi
 }
 
 pub fn sys_rt_sigtimedwait(set: usize, info: usize, timeout: usize) -> isize {
-    println!("sys rt_sigtimedwait isn't fully implemented, only sigchld won't be ingnored");
+    // println!("sys rt_sigtimedwait isn't fully implemented, only sigchld won't be ingnored");
     let token = current_user_token();
     let set = *translated_ref(token, set as *mut SignalFlags);
     if set.contains(SignalFlags::SIGCHLD) {

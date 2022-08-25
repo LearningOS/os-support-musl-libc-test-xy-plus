@@ -86,7 +86,7 @@ pub fn syscall(syscall_id: usize, args: [usize; 4]) -> isize {
         SYSCALL_GETTID => sys_gettid(),
         SYSCALL_WAITTID => sys_waittid(args[0]) as isize,
         SYSCALL_PRLIMIT64 => {
-            println!("[kernel] warn: skip unimplemented sys prlimit64");
+            // println!("[kernel] warn: skip unimplemented sys prlimit64");
             0
         }
         SYSCALL_MUTEX_CREATE => sys_mutex_create(args[0] == 1),
