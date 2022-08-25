@@ -42,7 +42,7 @@ static void usage(char *argv[])
 int main(int argc, char *argv[])
 {
 	char *wrap = "";
-	int timeoutsec = 5;
+	int timeoutsec = 1;
 	int timeout = 0;
 	int status;
 	sigset_t set;

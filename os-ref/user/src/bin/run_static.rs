@@ -132,7 +132,6 @@ fn run_tests(tests: &[&str]) {
     ];
 
     for test in tests {
-        println!("Usertests: Running {}", test);
         arr[0] = "runtest.exe\0".as_ptr();
         arr[1] = "-w\0".as_ptr();
         arr[2] = "entry-static.exe\0".as_ptr();

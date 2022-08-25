@@ -4,7 +4,7 @@ use crate::task::{
     current_process, current_task, current_user_token, exit_current_and_run_next, pid2process,
     suspend_current_and_run_next, SignalFlags,
 };
-use crate::timer::get_time_ms;
+use crate::timer::{get_time_ms, TimeVal};
 use alloc::string::String;
 use alloc::sync::Arc;
 use alloc::vec::Vec;
@@ -21,6 +21,19 @@ pub fn sys_yield() -> isize {
 
 pub fn sys_get_time() -> isize {
     get_time_ms() as isize
+}
+
+pub fn sys_clock_get_time(_clock: usize, ts: usize) -> isize {
+    let us = get_time_ms() * 1000;
+    let token = current_user_token();
+    let ts = translated_refmut(token, ts as *mut TimeVal);
+    unsafe {
+        *ts = TimeVal {
+            sec: us / 1_000_000,
+            usec: us % 1_000_000,
+        };
+    }
+    0
 }
 
 pub fn sys_getpid() -> isize {
