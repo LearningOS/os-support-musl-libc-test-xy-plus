@@ -16,6 +16,7 @@ const SYSCALL_RT_SIGTIMEDWAIT: usize = 137;
 const SYSCALL_GET_TIME: usize = 169;
 const SYSCALL_GETPID: usize = 172;
 const SYSCALL_GETTID: usize = 178;
+const SYSCALL_BRK: usize = 214;
 const SYSCALL_FORK: usize = 220;
 const SYSCALL_EXEC: usize = 221;
 const SYSCALL_WAITPID: usize = 260;
@@ -81,6 +82,10 @@ pub fn syscall(syscall_id: usize, args: [usize; 4]) -> isize {
         SYSCALL_GET_TIME => sys_get_time(),
         SYSCALL_CLOCK_GETTIME => sys_clock_get_time(args[0], args[1]),
         SYSCALL_GETPID => sys_getpid(),
+        SYSCALL_BRK => {
+            // println!("[kernel] warn: skip unimplemented sys brk");
+            0
+        }
         SYSCALL_FORK => sys_fork(),
         SYSCALL_EXEC => sys_exec(args[0] as *const u8, args[1] as *const usize),
         SYSCALL_WAITPID => sys_waitpid(args[0] as isize, args[1] as *mut i32),
