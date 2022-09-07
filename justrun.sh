@@ -1,5 +1,8 @@
 #!/bin/sh
 
+cd testsuits-for-os/libc-test
+make disk -j 8
+cd ../..
 cd os-ref/easy-fs-fuse && cargo run --release -- -s ../user/src/bin/ -t ../user/target/riscv64gc-unknown-none-elf/release/
 cd ../..
 rm os/fs.img
