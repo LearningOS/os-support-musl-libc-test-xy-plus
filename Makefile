@@ -13,3 +13,6 @@ env:
 	curl https://sh.rustup.rs -sSf | sh -s -- -y
 	source ${HOME}/.cargo/env
 	rustc --version
+
+debug:
+	rust-objdump --arch-name=riscv64 -d testsuits-for-os/libc-test/disk/entry-static.exe >> static.log

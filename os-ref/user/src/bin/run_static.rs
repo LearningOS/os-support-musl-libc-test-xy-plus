@@ -11,11 +11,11 @@ extern crate user_lib;
 static SATIC_TESTS: &[&str] = &[
     ("argv\0"),
     ("basename\0"),
-    ("clocale_mbfuncs\0"),
+    // ("clocale_mbfuncs\0"),
     ("clock_gettime\0"),
     ("crypt\0"),
     ("dirname\0"),
-    ("env\0"),
+    // ("env\0"),
     ("fdopen\0"),
     ("fnmatch\0"),
     ("fscanf\0"),
