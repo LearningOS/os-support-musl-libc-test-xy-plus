@@ -133,17 +133,52 @@ sys_rt_sigtimedwait 用的是一个偷懒的实现方案，该调用要求在截
 
 - clocale_mbfuncs.c 出错
 
-t_error 导致的，暂时没管。
+调用 MB_CUR_MAX 。
+
+```c
+// in libc test
+#define	MB_CUR_MAX	(__ctype_get_mb_cur_max ())
+
+// in musl libc
+size_t __ctype_get_mb_cur_max()
+{
+	return MB_CUR_MAX;
+}
+#define MB_CUR_MAX (CURRENT_UTF8 ? 4 : 1)
+#define CURRENT_UTF8 (!!__pthread_self()->locale->cat[LC_CTYPE])
+#define __pthread_self() ((pthread_t)__get_tp())
+static inline uintptr_t __get_tp()
+{
+	uintptr_t tp;
+	__asm__ ("mov %%fs:0,%0" : "=r" (tp) );
+	return tp;
+}
+```
+
+```s
+000000000002bd30 <__ctype_get_mb_cur_max>:
+   2bd30: 93 07 02 00  	mv	a5, tp
+   2bd34: 83 b7 07 fd  	ld	a5, -48(a5)
+   2bd38: 13 05 40 00  	li	a0, 4
+   2bd3c: 83 b7 07 00  	ld	a5, 0(a5)	# core dump here
+   2bd40: 63 94 07 00  	bnez	a5, 0x2bd48 <__ctype_get_mb_cur_max+0x18>
+   2bd44: 13 05 10 00  	li	a0, 1
+   2bd48: 67 80 00 00  	ret
+```
+
+todo：目前是直接给 tp 一块 4096 大小的全零空地址，可能需要正确赋值。
 
 - clock_gettime 出错
 
-实现 sys_clock_gettime 后解决
+实现 sys_clock_gettime 后解决。
 
 - env
 
 查了一下似乎是需要向用户程序传递环境变量，类似 argv ，正在查/写。
 
 旧 gcc 会有乱七八糟的问题，新 gcc 会给 env 传一个 NULL ，并按照预期出错。
+
+todo：正确传入 env 参数，或至少要手动传一个变量。
 
 - 电脑坏了
 
@@ -172,3 +207,7 @@ t_error 导致的，暂时没管。
 这个函数似乎会出现一些奇怪的问题导致访存错误，然后我只想看到 print 出来的信息，所以改为 t_printf 用于 debug 。且如果能通过测例，不会触发 t_error ，因此问题不大。
 
 但是在修改了 gcc 后不再存在这个问题。
+
+- fdopen
+
+todo：查错
