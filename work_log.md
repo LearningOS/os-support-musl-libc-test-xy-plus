@@ -142,3 +142,33 @@ t_error 导致的，暂时没管。
 - env
 
 查了一下似乎是需要向用户程序传递环境变量，类似 argv ，正在查/写。
+
+旧 gcc 会有乱七八糟的问题，新 gcc 会给 env 传一个 NULL ，并按照预期出错。
+
+- 电脑坏了
+
+丢失了一周的进展。
+
+在本项目的根目录编写 Makefile ，能够一键配置 baseline 的环境。
+
+编译测例需要 riscv64-linux-musl-gcc ，我从 musl.cc 下载后使用，编译运行会出现很多奇怪的访存错误。查错一日，无果。
+
+经过 szx 大佬的指点后，使用 https://toolchains.bootlin.com/releases_riscv64.html 下载的 musl gcc 即可解决。这是 libc test 使用的 gcc 。
+
+- brk
+
+不知道为什么会用到这种已经被弃用的 syscall ，一开始是直接 return 0 ，希望看看程序后面的运行情况。然后发现程序反复调用了两次 brk 就访存错误崩溃了。
+
+根据测例检查，未发现 brk 的系统调用。发现有调用 malloc ，这个和内存相关，所以进入 musl 检查。
+
+进入 musl 源码检查 malloc 的实现，发现是先调用了 brk ，如果 brk 出错，才会尝试 mmap 来分配内存。因此只需要 brk return -1 即可。
+
+- fix.py
+
+修改了 gcc 后，编译出来的文件不再有格式问题，不需要使用 py 对格式进行处理。
+
+- t_error
+
+这个函数似乎会出现一些奇怪的问题导致访存错误，然后我只想看到 print 出来的信息，所以改为 t_printf 用于 debug 。且如果能通过测例，不会触发 t_error ，因此问题不大。
+
+但是在修改了 gcc 后不再存在这个问题。
