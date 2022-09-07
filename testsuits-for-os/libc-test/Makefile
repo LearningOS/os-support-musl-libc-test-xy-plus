@@ -1,5 +1,5 @@
-MUSL_LIB?=/usr/local/riscv64-linux-musl-cross/riscv64-linux-musl/lib
-PREFIX?=riscv64-linux-musl-
+MUSL_LIB?=/home/luffy/env/riscv64--musl--bleeding-edge-2020.08-1/riscv64-buildroot-linux-musl/sysroot/lib
+PREFIX?=riscv64-buildroot-linux-musl-
 CC=$(PREFIX)gcc
 OBJCOPY=$(PREFIX)objcopy
 # CC=musl-gcc
@@ -58,7 +58,7 @@ entry.h: dynamic.txt static.txt
 	printf "};\n" >> entry.h
 	printf "#endif\n\n" >> entry.h
 
-	python3.8 fix.py
+	# python3.8 fix.py
 
 runtest: src/common/runtest.obj $(COMMON_OBJS) initcode.S umain.c
 	$(CC) $(LDFLAGS) $^ -static -o runtest.exe
