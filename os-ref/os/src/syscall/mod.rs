@@ -84,7 +84,7 @@ pub fn syscall(syscall_id: usize, args: [usize; 4]) -> isize {
         SYSCALL_GETPID => sys_getpid(),
         SYSCALL_BRK => {
             // println!("[kernel] warn: skip unimplemented sys brk");
-            0
+            -1
         }
         SYSCALL_FORK => sys_fork(),
         SYSCALL_EXEC => sys_exec(args[0] as *const u8, args[1] as *const usize),
