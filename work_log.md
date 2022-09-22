@@ -216,4 +216,12 @@ todo：查错
 
 - fnmatch 测例
 
-调用了 mmap ，实现后通过
+调用了 mmap ，实现后通过。
+
+- mbc 测例
+
+调用了 mmap ，使用了暂时不支持的参数，暂时跳过。
+
+- pthread 测例
+
+好复杂，会挂在 musl 的 pthread create ，先跳过。
