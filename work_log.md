@@ -211,3 +211,9 @@ todo：正确传入 env 参数，或至少要手动传一个变量。
 - fdopen
 
 todo：查错
+
+一大堆问题，写自闭了，跳过。暂时打算跳过所有涉及 open 的 syscall 。
+
+- fnmatch 测例
+
+调用了 mmap ，实现后通过

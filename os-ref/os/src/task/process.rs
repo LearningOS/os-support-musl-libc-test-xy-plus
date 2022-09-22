@@ -3,9 +3,10 @@ use super::manager::insert_into_pid2process;
 use super::TaskControlBlock;
 use super::{add_task, SignalFlags};
 use super::{pid_alloc, PidHandle};
+use crate::config::PAGE_SIZE;
 use crate::config::RTMAX;
 use crate::fs::{File, Stdin, Stdout};
-use crate::mm::{translated_refmut, MemorySet, KERNEL_SPACE};
+use crate::mm::{translated_refmut, MapPermission, MemorySet, KERNEL_SPACE};
 use crate::sync::{Condvar, Mutex, Semaphore, UPIntrFreeCell, UPIntrRefMut};
 use crate::task::signal::SignalAction;
 use crate::trap::{trap_handler, TrapContext};
@@ -283,5 +284,49 @@ impl ProcessControlBlock {
 
     pub fn getpid(&self) -> usize {
         self.pid.0
+    }
+
+    pub fn mmap(&self, start: usize, len: usize, port: usize) -> isize {
+        if start % PAGE_SIZE != 0 {
+            return -1;
+        }
+        if port & !0x7 != 0 {
+            return -1;
+        }
+        if port & 0x7 == 0 {
+            return -1;
+        }
+        let mut inner = self.inner_exclusive_access();
+        let permission = MapPermission::from_bits(((port << 1) | 16) as u8).unwrap();
+        for vpn in (start / PAGE_SIZE)..((start + len - 1) / PAGE_SIZE + 1) {
+            if inner.memory_set.is_map(vpn.into()) {
+                return -1;
+            }
+        }
+        for vpn in (start / PAGE_SIZE)..((start + len - 1) / PAGE_SIZE + 1) {
+            inner.memory_set.insert_framed_area(
+                (vpn * PAGE_SIZE).into(),
+                ((vpn + 1) * PAGE_SIZE).into(),
+                permission,
+            );
+        }
+        0
+    }
+
+    pub fn munmap(&self, start: usize, len: usize) -> isize {
+        if start % PAGE_SIZE != 0 || len % PAGE_SIZE != 0 {
+            return -1;
+        }
+        let mut inner = self.inner_exclusive_access();
+
+        for vpn in (start / PAGE_SIZE)..((start + len - 1) / PAGE_SIZE + 1) {
+            if !inner.memory_set.is_map(vpn.into()) {
+                return -1;
+            }
+        }
+        for vpn in (start / PAGE_SIZE)..((start + len - 1) / PAGE_SIZE + 1) {
+            inner.memory_set.remove_area_with_start_vpn(vpn.into());
+        }
+        0
     }
 }

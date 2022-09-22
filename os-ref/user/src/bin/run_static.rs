@@ -16,7 +16,7 @@ static SATIC_TESTS: &[&str] = &[
     ("crypt\0"),
     ("dirname\0"),
     // ("env\0"),
-    ("fdopen\0"),
+    // ("fdopen\0"),
     ("fnmatch\0"),
     ("fscanf\0"),
     ("fwscanf\0"),

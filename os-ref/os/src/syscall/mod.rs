@@ -24,6 +24,7 @@ numeric_enum! {
         BRK = 214,
         FORK = 220,
         EXEC = 221,
+        MMAP = 222,
         WAITPID = 260,
         PRLIMIT64 = 261,
         THREAD_CREATE = 1000,
@@ -97,6 +98,7 @@ pub fn syscall(syscall_id: usize, args: [usize; 4]) -> isize {
             }
             SYSCALL::FORK => sys_fork(),
             SYSCALL::EXEC => sys_exec(args[0] as *const u8, args[1] as *const usize),
+            SYSCALL::MMAP => sys_mmap(args[0], args[1], args[2]),
             SYSCALL::WAITPID => sys_waitpid(args[0] as isize, args[1] as *mut i32),
             SYSCALL::THREAD_CREATE => sys_thread_create(args[0], args[1]),
             SYSCALL::GETTID => sys_gettid(),
