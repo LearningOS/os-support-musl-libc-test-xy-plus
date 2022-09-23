@@ -225,3 +225,9 @@ todo：查错
 - pthread 测例
 
 好复杂，会挂在 musl 的 pthread create ，先跳过。
+
+- qsort 测例
+
+不明 page fault ，检查后发现是 user stack 小了，改为 4096 \* 8 后解决，但是 return 会是 -1 。
+
+经过检查，是在 debug 时调用了 t_printf ，该函数修改了 t_status ，导致返回错误的数值。删除 debug 内容后通过。
